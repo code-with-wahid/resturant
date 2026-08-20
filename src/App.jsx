@@ -1,106 +1,186 @@
-import { useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import {
   Search,
   ShoppingBag,
-  Menu,
+  Heart,
+  Plus,
+  Minus,
   X,
   Star,
   ArrowRight,
-  Plus,
-  Minus,
-  MapPin,
   Clock,
-  Phone,
+  MapPin,
+  CheckCircle2,
+  Trash2,
+  ChevronRight,
+  Sparkles,
+  Menu,
 } from "lucide-react";
-import "./index.css";
+import "./App.css";
 
 const foods = [
   {
     id: 1,
     name: "Truffle Mushroom Pasta",
     category: "Pasta",
-    price: 420,
-    image:
-      "https://images.unsplash.com/photo-1473093295043-cdd812d0e601?w=800",
+    price: 299,
     rating: 4.9,
-    description: "Creamy truffle sauce, wild mushrooms & parmesan.",
+    time: "20 min",
+    image:
+      "https://images.unsplash.com/photo-1473093295043-cdd812d0e601?auto=format&fit=crop&w=900&q=85",
+    description:
+      "Creamy pasta with roasted mushrooms, parmesan and a touch of truffle.",
+    tag: "Chef's Pick",
   },
   {
     id: 2,
-    name: "Classic Margherita",
-    category: "Pizza",
-    price: 360,
-    image:
-      "https://images.unsplash.com/photo-1574071318508-1cdbab80d002?w=800",
+    name: "Smoky Chicken Burger",
+    category: "Burger",
+    price: 249,
     rating: 4.8,
-    description: "Fresh mozzarella, basil & San Marzano tomatoes.",
+    time: "15 min",
+    image:
+      "https://images.unsplash.com/photo-1568901346375-23c9450c58cd?auto=format&fit=crop&w=900&q=85",
+    description:
+      "Juicy grilled chicken, smoky sauce, fresh lettuce and crispy onions.",
+    tag: "Popular",
   },
   {
     id: 3,
-    name: "Smoky BBQ Burger",
-    category: "Burger",
-    price: 390,
-    image:
-      "https://images.unsplash.com/photo-1568901346375-23c9450c58cd?w=800",
+    name: "Margherita Pizza",
+    category: "Pizza",
+    price: 329,
     rating: 4.9,
-    description: "Grilled beef, smoked BBQ sauce & crispy onions.",
+    time: "25 min",
+    image:
+      "https://images.unsplash.com/photo-1574071318508-1cdbab80d002?auto=format&fit=crop&w=900&q=85",
+    description:
+      "Classic Italian pizza with tomato, mozzarella, basil and olive oil.",
+    tag: "Classic",
   },
   {
     id: 4,
-    name: "Butter Chicken",
-    category: "Indian",
-    price: 450,
+    name: "Crispy Chicken Wings",
+    category: "Starters",
+    price: 219,
+    rating: 4.7,
+    time: "18 min",
     image:
-      "https://images.unsplash.com/photo-1603894584373-5ac82b2ae398?w=800",
-    rating: 4.9,
-    description: "Tender chicken in rich tomato-butter gravy.",
+      "https://images.unsplash.com/photo-1527477396000-e27163b481c2?auto=format&fit=crop&w=900&q=85",
+    description:
+      "Golden crispy chicken wings tossed in our signature spicy sauce.",
+    tag: "Hot",
   },
   {
     id: 5,
-    name: "Sushi Deluxe",
-    category: "Asian",
-    price: 650,
-    image:
-      "https://images.unsplash.com/photo-1579871494447-9811cf80d66c?w=800",
+    name: "Paneer Tikka",
+    category: "Starters",
+    price: 199,
     rating: 4.8,
-    description: "Premium sushi selection prepared by our chef.",
+    time: "20 min",
+    image:
+      "https://images.unsplash.com/photo-1567188040759-fb8a883dc6d8?auto=format&fit=crop&w=900&q=85",
+    description:
+      "Char-grilled paneer with peppers, onions and aromatic Indian spices.",
+    tag: "Veg",
   },
   {
     id: 6,
+    name: "Creamy Alfredo",
+    category: "Pasta",
+    price: 279,
+    rating: 4.7,
+    time: "20 min",
+    image:
+      "https://images.unsplash.com/photo-1551183053-bf91a1d81141?auto=format&fit=crop&w=900&q=85",
+    description:
+      "Silky Alfredo sauce, parmesan and herbs over perfectly cooked pasta.",
+    tag: "Creamy",
+  },
+  {
+    id: 7,
+    name: "Double Cheese Pizza",
+    category: "Pizza",
+    price: 399,
+    rating: 4.9,
+    time: "25 min",
+    image:
+      "https://images.unsplash.com/photo-1579751626657-72bc17010498?auto=format&fit=crop&w=900&q=85",
+    description:
+      "Extra mozzarella, cheddar, tomato sauce and a crispy golden crust.",
+    tag: "Bestseller",
+  },
+  {
+    id: 8,
     name: "Chocolate Lava Cake",
     category: "Dessert",
-    price: 280,
+    price: 179,
+    rating: 4.9,
+    time: "12 min",
     image:
-      "https://images.unsplash.com/photo-1606313564200-e75d5e30476c?w=800",
-    rating: 5,
-    description: "Warm chocolate cake with a molten center.",
+      "https://images.unsplash.com/photo-1606313564200-e75d5e30476c?auto=format&fit=crop&w=900&q=85",
+    description:
+      "Warm chocolate cake with a rich molten chocolate center.",
+    tag: "Sweet",
   },
 ];
 
-const categories = ["All", "Pizza", "Pasta", "Burger", "Indian", "Asian", "Dessert"];
+const categories = ["All", "Pizza", "Burger", "Pasta", "Starters", "Dessert"];
 
 function App() {
-  const [activeCategory, setActiveCategory] = useState("All");
   const [search, setSearch] = useState("");
-  const [cart, setCart] = useState([]);
+  const [category, setCategory] = useState("All");
+  const [cart, setCart] = useState(() => {
+    return JSON.parse(localStorage.getItem("restaurant-cart")) || [];
+  });
+  const [favorites, setFavorites] = useState(() => {
+    return JSON.parse(localStorage.getItem("restaurant-favorites")) || [];
+  });
+  const [selectedFood, setSelectedFood] = useState(null);
+  const [cartOpen, setCartOpen] = useState(false);
+  const [checkoutOpen, setCheckoutOpen] = useState(false);
+  const [success, setSuccess] = useState(false);
+  const [coupon, setCoupon] = useState("");
+  const [couponApplied, setCouponApplied] = useState(false);
   const [mobileMenu, setMobileMenu] = useState(false);
 
-  const filteredFoods = foods.filter((food) => {
-    const categoryMatch =
-      activeCategory === "All" || food.category === activeCategory;
+  useEffect(() => {
+    localStorage.setItem("restaurant-cart", JSON.stringify(cart));
+  }, [cart]);
 
-    const searchMatch = food.name
-      .toLowerCase()
-      .includes(search.toLowerCase());
+  useEffect(() => {
+    localStorage.setItem("restaurant-favorites", JSON.stringify(favorites));
+  }, [favorites]);
 
-    return categoryMatch && searchMatch;
-  });
+  const filteredFoods = useMemo(() => {
+    return foods.filter((food) => {
+      const matchesCategory =
+        category === "All" || food.category === category;
+
+      const matchesSearch = food.name
+        .toLowerCase()
+        .includes(search.toLowerCase());
+
+      return matchesCategory && matchesSearch;
+    });
+  }, [category, search]);
+
+  const cartCount = cart.reduce((sum, item) => sum + item.quantity, 0);
+
+  const subtotal = cart.reduce(
+    (sum, item) => sum + item.price * item.quantity,
+    0
+  );
+
+  const discount = couponApplied ? Math.round(subtotal * 0.1) : 0;
+  const delivery = subtotal > 499 || subtotal === 0 ? 0 : 40;
+  const total = subtotal - discount + delivery;
 
   const addToCart = (food) => {
     setCart((current) => {
-      const exists = current.find((item) => item.id === food.id);
+      const existing = current.find((item) => item.id === food.id);
 
-      if (exists) {
+      if (existing) {
         return current.map((item) =>
           item.id === food.id
             ? { ...item, quantity: item.quantity + 1 }
@@ -112,41 +192,63 @@ function App() {
     });
   };
 
-  const increase = (id) => {
-    setCart((current) =>
-      current.map((item) =>
-        item.id === id ? { ...item, quantity: item.quantity + 1 } : item
-      )
-    );
-  };
-
-  const decrease = (id) => {
+  const updateQuantity = (id, amount) => {
     setCart((current) =>
       current
         .map((item) =>
-          item.id === id ? { ...item, quantity: item.quantity - 1 } : item
+          item.id === id
+            ? { ...item, quantity: item.quantity + amount }
+            : item
         )
         .filter((item) => item.quantity > 0)
     );
   };
 
-  const totalItems = cart.reduce((sum, item) => sum + item.quantity, 0);
+  const removeFromCart = (id) => {
+    setCart((current) => current.filter((item) => item.id !== id));
+  };
 
-  const totalPrice = cart.reduce(
-    (sum, item) => sum + item.price * item.quantity,
-    0
-  );
+  const toggleFavorite = (id) => {
+    setFavorites((current) =>
+      current.includes(id)
+        ? current.filter((item) => item !== id)
+        : [...current, id]
+    );
+  };
+
+  const applyCoupon = () => {
+    if (coupon.trim().toUpperCase() === "WELCOME10" && subtotal > 0) {
+      setCouponApplied(true);
+    }
+  };
+
+  const placeOrder = (event) => {
+    event.preventDefault();
+
+    setCheckoutOpen(false);
+    setCart([]);
+    setCoupon("");
+    setCouponApplied(false);
+    setSuccess(true);
+
+    setTimeout(() => setSuccess(false), 5000);
+  };
 
   return (
     <div className="app">
-      {/* NAVBAR */}
+      <div className="ambient ambient-one" />
+      <div className="ambient ambient-two" />
 
-      <nav className="navbar">
+      {/* NAVBAR */}
+      <header className="navbar">
         <a href="#home" className="logo">
-          ÉLANE<span>.</span>
+          <span className="logo-icon">🍽️</span>
+          <span>
+            ELANE<span className="logo-dot">.</span>
+          </span>
         </a>
 
-        <div className={`nav-links ${mobileMenu ? "show" : ""}`}>
+        <nav className={mobileMenu ? "nav-links active" : "nav-links"}>
           <a href="#home" onClick={() => setMobileMenu(false)}>
             Home
           </a>
@@ -159,341 +261,590 @@ function App() {
           <a href="#contact" onClick={() => setMobileMenu(false)}>
             Contact
           </a>
-        </div>
+        </nav>
 
         <div className="nav-actions">
-          <div className="cart-icon">
-            <ShoppingBag size={21} />
-            {totalItems > 0 && <span>{totalItems}</span>}
-          </div>
-
-          <button className="reserve-btn">Reserve Table</button>
+          <button
+            className="icon-button favorite-nav"
+            onClick={() => {
+              setCategory("All");
+              setSearch("");
+            }}
+            aria-label="Favorites"
+          >
+            <Heart size={20} />
+            {favorites.length > 0 && (
+              <span className="count-badge">{favorites.length}</span>
+            )}
+          </button>
 
           <button
-            className="mobile-toggle"
+            className="cart-button"
+            onClick={() => setCartOpen(true)}
+          >
+            <ShoppingBag size={19} />
+            <span>Cart</span>
+            {cartCount > 0 && (
+              <strong className="cart-count">{cartCount}</strong>
+            )}
+          </button>
+
+          <button
+            className="mobile-menu"
             onClick={() => setMobileMenu(!mobileMenu)}
           >
             {mobileMenu ? <X /> : <Menu />}
           </button>
         </div>
-      </nav>
+      </header>
 
       {/* HERO */}
-
-      <section className="hero" id="home">
-        <div className="hero-content">
-          <div className="hero-tag">
-            <span></span> Fine Dining • Modern Cuisine
-          </div>
-
-          <h1>
-            Taste the
-            <br />
-            <i>extraordinary.</i>
-          </h1>
-
-          <p>
-            A modern culinary experience where bold flavors,
-            premium ingredients and unforgettable moments come together.
-          </p>
-
-          <div className="hero-buttons">
-            <a href="#menu" className="primary-btn">
-              Explore Menu <ArrowRight size={18} />
-            </a>
-
-            <button className="secondary-btn">Book a Table</button>
-          </div>
-
-          <div className="hero-info">
-            <div>
-              <strong>4.9</strong>
-              <span>
-                <Star size={14} fill="currentColor" /> Google Rating
-              </span>
+      <main>
+        <section className="hero" id="home">
+          <div className="hero-content">
+            <div className="eyebrow">
+              <Sparkles size={15} />
+              PREMIUM FOOD • FRESH EVERY DAY
             </div>
 
-            <div>
-              <strong>15+</strong>
-              <span>Years of Experience</span>
+            <h1>
+              Good food.
+              <br />
+              <span>Great mood.</span>
+            </h1>
+
+            <p>
+              Handcrafted dishes, fresh ingredients and unforgettable
+              flavours — delivered straight to your table.
+            </p>
+
+            <div className="hero-buttons">
+              <a href="#menu" className="primary-button">
+                Explore Menu <ArrowRight size={18} />
+              </a>
+
+              <a href="#about" className="secondary-button">
+                Our Story
+              </a>
             </div>
 
-            <div>
-              <strong>50+</strong>
-              <span>Signature Dishes</span>
+            <div className="hero-stats">
+              <div>
+                <strong>4.9</strong>
+                <span>
+                  <Star size={13} fill="currentColor" /> Rating
+                </span>
+              </div>
+
+              <div>
+                <strong>25+</strong>
+                <span>Fresh Dishes</span>
+              </div>
+
+              <div>
+                <strong>20 min</strong>
+                <span>Avg. Delivery</span>
+              </div>
             </div>
           </div>
-        </div>
 
-        <div className="hero-image">
-          <div className="hero-image-card">
-            <img
-              src="https://images.unsplash.com/photo-1515003197210-e0cd71810b5f?w=1200"
-              alt="Premium food"
-            />
-          </div>
+          <div className="hero-visual">
+            <div className="hero-glow" />
 
-          <div className="floating-card">
-            <div className="mini-image">
+            <div className="hero-card">
               <img
-                src="https://images.unsplash.com/photo-1563379926898-05f4575a45d8?w=300"
-                alt="Chef special"
+                src="https://images.unsplash.com/photo-1547592180-85f173990554?auto=format&fit=crop&w=1100&q=90"
+                alt="Fresh restaurant food"
+              />
+
+              <div className="floating-rating">
+                <Star size={17} fill="currentColor" />
+                <div>
+                  <strong>4.9/5</strong>
+                  <span>2,000+ reviews</span>
+                </div>
+              </div>
+
+              <div className="floating-delivery">
+                <span className="delivery-icon">⚡</span>
+                <div>
+                  <strong>Fast Delivery</strong>
+                  <span>Hot & fresh</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        {/* MENU */}
+        <section className="menu-section" id="menu">
+          <div className="section-heading">
+            <div>
+              <span className="section-label">OUR MENU</span>
+              <h2>Choose your favourite.</h2>
+              <p>Made fresh. Served hot. Loved instantly.</p>
+            </div>
+
+            <div className="search-box">
+              <Search size={19} />
+              <input
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+                placeholder="Search dishes..."
               />
             </div>
-
-            <div>
-              <small>Chef's Special</small>
-              <strong>Truffle Pasta</strong>
-              <span>★★★★★</span>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* MENU */}
-
-      <section className="menu-section" id="menu">
-        <div className="section-heading">
-          <div>
-            <span className="eyebrow">OUR MENU</span>
-            <h2>Made with passion.</h2>
           </div>
 
-          <p>
-            Discover dishes crafted with carefully selected ingredients
-            and a little bit of culinary magic.
-          </p>
-        </div>
-
-        <div className="menu-toolbar">
           <div className="categories">
-            {categories.map((category) => (
+            {categories.map((item) => (
               <button
-                key={category}
-                className={activeCategory === category ? "active" : ""}
-                onClick={() => setActiveCategory(category)}
+                key={item}
+                className={category === item ? "active" : ""}
+                onClick={() => setCategory(item)}
               >
-                {category}
+                {item}
               </button>
             ))}
           </div>
 
-          <div className="search-box">
-            <Search size={18} />
-            <input
-              type="text"
-              placeholder="Search dishes..."
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-            />
-          </div>
-        </div>
+          <div className="food-grid">
+            {filteredFoods.map((food) => (
+              <article className="food-card" key={food.id}>
+                <div className="food-image">
+                  <img src={food.image} alt={food.name} />
 
-        <div className="food-grid">
-          {filteredFoods.map((food) => (
-            <article className="food-card" key={food.id}>
-              <div className="food-image">
-                <img src={food.image} alt={food.name} />
+                  <span className="food-tag">{food.tag}</span>
 
-                <div className="rating">
-                  <Star size={13} fill="currentColor" />
-                  {food.rating}
-                </div>
-              </div>
-
-              <div className="food-content">
-                <div className="food-top">
-                  <div>
-                    <span className="food-category">{food.category}</span>
-                    <h3>{food.name}</h3>
-                  </div>
-
-                  <strong>₹{food.price}</strong>
+                  <button
+                    className={
+                      favorites.includes(food.id)
+                        ? "favorite-button liked"
+                        : "favorite-button"
+                    }
+                    onClick={() => toggleFavorite(food.id)}
+                  >
+                    <Heart
+                      size={18}
+                      fill={
+                        favorites.includes(food.id)
+                          ? "currentColor"
+                          : "none"
+                      }
+                    />
+                  </button>
                 </div>
 
-                <p>{food.description}</p>
+                <div className="food-info">
+                  <div className="food-top">
+                    <span>{food.category}</span>
 
-                <button
-                  className="add-btn"
-                  onClick={() => addToCart(food)}
-                >
-                  <Plus size={17} />
-                  Add to Cart
-                </button>
-              </div>
-            </article>
-          ))}
-        </div>
-
-        {filteredFoods.length === 0 && (
-          <div className="empty-search">
-            No dishes found 😕
-          </div>
-        )}
-      </section>
-
-      {/* ABOUT */}
-
-      <section className="about-section" id="about">
-        <div className="about-image">
-          <img
-            src="https://images.unsplash.com/photo-1414235077428-338989a2e8c0?w=1000"
-            alt="Restaurant interior"
-          />
-        </div>
-
-        <div className="about-content">
-          <span className="eyebrow">OUR STORY</span>
-
-          <h2>
-            More than food.
-            <br />
-            <i>It's an experience.</i>
-          </h2>
-
-          <p>
-            ÉLANE was born from a simple idea — great food should bring
-            people together. Our chefs combine traditional techniques
-            with modern creativity to create dishes that surprise,
-            comfort and inspire.
-          </p>
-
-          <p>
-            Every ingredient is carefully selected. Every plate has a
-            story. And every guest deserves an unforgettable experience.
-          </p>
-
-          <button className="outline-btn">
-            Discover Our Story <ArrowRight size={18} />
-          </button>
-        </div>
-      </section>
-
-      {/* CART */}
-
-      <section className="cart-section">
-        <div className="cart-header">
-          <div>
-            <span className="eyebrow">YOUR ORDER</span>
-            <h2>Your basket.</h2>
-          </div>
-
-          <span className="cart-count">{totalItems} items</span>
-        </div>
-
-        {cart.length === 0 ? (
-          <div className="empty-cart">
-            <ShoppingBag size={45} />
-            <h3>Your cart is empty</h3>
-            <p>Add something delicious from our menu.</p>
-
-            <a href="#menu" className="primary-btn">
-              Browse Menu
-            </a>
-          </div>
-        ) : (
-          <div className="cart-container">
-            <div className="cart-items">
-              {cart.map((item) => (
-                <div className="cart-item" key={item.id}>
-                  <img src={item.image} alt={item.name} />
-
-                  <div className="cart-item-info">
-                    <h3>{item.name}</h3>
-                    <span>₹{item.price}</span>
+                    <div className="rating">
+                      <Star size={14} fill="currentColor" />
+                      {food.rating}
+                    </div>
                   </div>
 
-                  <div className="quantity">
-                    <button onClick={() => decrease(item.id)}>
-                      <Minus size={15} />
-                    </button>
+                  <h3>{food.name}</h3>
 
-                    <strong>{item.quantity}</strong>
+                  <p>{food.description}</p>
 
-                    <button onClick={() => increase(item.id)}>
-                      <Plus size={15} />
+                  <div className="food-bottom">
+                    <strong>₹{food.price}</strong>
+
+                    <button
+                      className="add-button"
+                      onClick={() => addToCart(food)}
+                    >
+                      <Plus size={17} />
+                      Add
                     </button>
                   </div>
 
-                  <strong className="item-total">
-                    ₹{item.price * item.quantity}
-                  </strong>
+                  <button
+                    className="details-button"
+                    onClick={() => setSelectedFood(food)}
+                  >
+                    View details <ChevronRight size={15} />
+                  </button>
                 </div>
-              ))}
-            </div>
+              </article>
+            ))}
+          </div>
 
-            <div className="cart-summary">
-              <h3>Order Summary</h3>
-
-              <div>
-                <span>Subtotal</span>
-                <strong>₹{totalPrice}</strong>
-              </div>
-
-              <div>
-                <span>Delivery</span>
-                <strong>₹40</strong>
-              </div>
-
-              <hr />
-
-              <div className="grand-total">
-                <span>Total</span>
-                <strong>₹{totalPrice + 40}</strong>
-              </div>
-
-              <button className="checkout-btn">
-                Proceed to Checkout <ArrowRight size={18} />
+          {filteredFoods.length === 0 && (
+            <div className="empty-search">
+              <span>🍽️</span>
+              <h3>No dishes found</h3>
+              <p>Try another search or category.</p>
+              <button
+                onClick={() => {
+                  setSearch("");
+                  setCategory("All");
+                }}
+              >
+                Show all dishes
               </button>
             </div>
-          </div>
-        )}
-      </section>
+          )}
+        </section>
 
-      {/* CONTACT */}
-
-      <section className="contact-section" id="contact">
-        <div>
-          <span className="eyebrow">VISIT ÉLANE</span>
-          <h2>Let's make tonight memorable.</h2>
-        </div>
-
-        <div className="contact-grid">
+        {/* PROMO */}
+        <section className="promo-section">
           <div>
-            <MapPin />
-            <h3>Location</h3>
-            <p>21 Park Street, Kolkata, India</p>
+            <span className="section-label">SPECIAL OFFER</span>
+            <h2>
+              Your first bite
+              <br />
+              is <span>10% OFF.</span>
+            </h2>
+            <p>
+              Use code <strong>WELCOME10</strong> at checkout.
+            </p>
           </div>
 
-          <div>
-            <Clock />
-            <h3>Opening Hours</h3>
-            <p>Mon – Sun: 11:00 AM – 11:30 PM</p>
+          <a href="#menu" className="promo-button">
+            Order now <ArrowRight size={18} />
+          </a>
+        </section>
+
+        {/* ABOUT */}
+        <section className="about-section" id="about">
+          <div className="about-image">
+            <img
+              src="https://images.unsplash.com/photo-1414235077428-338989a2e8c0?auto=format&fit=crop&w=1100&q=85"
+              alt="Restaurant interior"
+            />
           </div>
 
-          <div>
-            <Phone />
-            <h3>Reservations</h3>
-            <p>+91 98765 43210</p>
+          <div className="about-content">
+            <span className="section-label">OUR STORY</span>
+            <h2>Food made with a little more love.</h2>
+            <p>
+              We believe a great restaurant is not just about food. It is
+              about the aroma when the plate arrives, the first bite, and
+              the people you share it with.
+            </p>
+
+            <div className="about-points">
+              <div>
+                <span>✓</span>
+                <p>Fresh ingredients every morning</p>
+              </div>
+              <div>
+                <span>✓</span>
+                <p>Chef-crafted recipes</p>
+              </div>
+              <div>
+                <span>✓</span>
+                <p>Fast & careful delivery</p>
+              </div>
+            </div>
           </div>
-        </div>
-      </section>
+        </section>
+
+        {/* CONTACT */}
+        <section className="contact-section" id="contact">
+          <div>
+            <span className="section-label">COME VISIT</span>
+            <h2>Let's eat something amazing.</h2>
+            <p>
+              Your table is waiting. Come hungry, leave happy.
+            </p>
+          </div>
+
+          <div className="contact-cards">
+            <div>
+              <MapPin size={20} />
+              <span>Location</span>
+              <strong>Chittaranjan, West Bengal</strong>
+            </div>
+
+            <div>
+              <Clock size={20} />
+              <span>Opening Hours</span>
+              <strong>11:00 AM — 11:00 PM</strong>
+            </div>
+          </div>
+        </section>
+      </main>
 
       {/* FOOTER */}
-
-      <footer>
-        <div className="footer-logo">
-          ÉLANE<span>.</span>
+      <footer className="footer">
+        <div className="logo">
+          <span className="logo-icon">🍽️</span>
+          ELANE<span className="logo-dot">.</span>
         </div>
 
-        <p>© 2026 ÉLANE Restaurant. Crafted with passion.</p>
+        <p>Good food. Great mood. ❤️</p>
 
-        <div className="footer-links">
-          <a href="#home">Instagram</a>
-          <a href="#home">Facebook</a>
-          <a href="#home">Privacy</a>
-        </div>
+        <span>© 2026 ELANE Restaurant</span>
       </footer>
+
+      {/* FOOD MODAL */}
+      {selectedFood && (
+        <div
+          className="modal-backdrop"
+          onClick={() => setSelectedFood(null)}
+        >
+          <div
+            className="food-modal"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <button
+              className="modal-close"
+              onClick={() => setSelectedFood(null)}
+            >
+              <X />
+            </button>
+
+            <img
+              src={selectedFood.image}
+              alt={selectedFood.name}
+            />
+
+            <div className="modal-content">
+              <span className="section-label">
+                {selectedFood.category}
+              </span>
+
+              <h2>{selectedFood.name}</h2>
+
+              <div className="modal-rating">
+                <Star size={17} fill="currentColor" />
+                {selectedFood.rating} • {selectedFood.time}
+              </div>
+
+              <p>{selectedFood.description}</p>
+
+              <div className="modal-bottom">
+                <strong>₹{selectedFood.price}</strong>
+
+                <button
+                  className="primary-button"
+                  onClick={() => {
+                    addToCart(selectedFood);
+                    setSelectedFood(null);
+                    setCartOpen(true);
+                  }}
+                >
+                  Add to cart <ShoppingBag size={17} />
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* CART DRAWER */}
+      {cartOpen && (
+        <div
+          className="drawer-backdrop"
+          onClick={() => setCartOpen(false)}
+        >
+          <aside
+            className="cart-drawer"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="cart-header">
+              <div>
+                <span className="section-label">YOUR ORDER</span>
+                <h2>Shopping cart</h2>
+              </div>
+
+              <button onClick={() => setCartOpen(false)}>
+                <X />
+              </button>
+            </div>
+
+            {cart.length === 0 ? (
+              <div className="empty-cart">
+                <ShoppingBag size={48} />
+                <h3>Your cart is empty</h3>
+                <p>Add something delicious to get started.</p>
+
+                <button
+                  className="primary-button"
+                  onClick={() => setCartOpen(false)}
+                >
+                  Browse menu
+                </button>
+              </div>
+            ) : (
+              <>
+                <div className="cart-items">
+                  {cart.map((item) => (
+                    <div className="cart-item" key={item.id}>
+                      <img src={item.image} alt={item.name} />
+
+                      <div className="cart-item-info">
+                        <h4>{item.name}</h4>
+                        <strong>₹{item.price}</strong>
+
+                        <div className="quantity">
+                          <button
+                            onClick={() =>
+                              updateQuantity(item.id, -1)
+                            }
+                          >
+                            <Minus size={14} />
+                          </button>
+
+                          <span>{item.quantity}</span>
+
+                          <button
+                            onClick={() =>
+                              updateQuantity(item.id, 1)
+                            }
+                          >
+                            <Plus size={14} />
+                          </button>
+                        </div>
+                      </div>
+
+                      <button
+                        className="remove-item"
+                        onClick={() => removeFromCart(item.id)}
+                      >
+                        <Trash2 size={17} />
+                      </button>
+                    </div>
+                  ))}
+                </div>
+
+                <div className="coupon">
+                  <input
+                    value={coupon}
+                    onChange={(e) => setCoupon(e.target.value)}
+                    placeholder="Coupon code"
+                  />
+                  <button onClick={applyCoupon}>Apply</button>
+                </div>
+
+                {couponApplied && (
+                  <div className="coupon-success">
+                    <CheckCircle2 size={16} />
+                    WELCOME10 applied — 10% saved!
+                  </div>
+                )}
+
+                <div className="cart-summary">
+                  <div>
+                    <span>Subtotal</span>
+                    <strong>₹{subtotal}</strong>
+                  </div>
+
+                  <div>
+                    <span>Delivery</span>
+                    <strong>
+                      {delivery === 0 ? "FREE" : `₹${delivery}`}
+                    </strong>
+                  </div>
+
+                  {discount > 0 && (
+                    <div className="discount">
+                      <span>Discount</span>
+                      <strong>-₹{discount}</strong>
+                    </div>
+                  )}
+
+                  <div className="total">
+                    <span>Total</span>
+                    <strong>₹{total}</strong>
+                  </div>
+                </div>
+
+                <button
+                  className="checkout-button"
+                  onClick={() => setCheckoutOpen(true)}
+                >
+                  Checkout <ArrowRight size={18} />
+                </button>
+
+                <p className="free-delivery">
+                  🚚 Free delivery on orders above ₹499
+                </p>
+              </>
+            )}
+          </aside>
+        </div>
+      )}
+
+      {/* CHECKOUT */}
+      {checkoutOpen && (
+        <div
+          className="modal-backdrop"
+          onClick={() => setCheckoutOpen(false)}
+        >
+          <form
+            className="checkout-modal"
+            onSubmit={placeOrder}
+            onClick={(e) => e.stopPropagation()}
+          >
+            <button
+              type="button"
+              className="modal-close"
+              onClick={() => setCheckoutOpen(false)}
+            >
+              <X />
+            </button>
+
+            <span className="section-label">CHECKOUT</span>
+            <h2>Almost there!</h2>
+            <p className="checkout-subtitle">
+              Enter your delivery details.
+            </p>
+
+            <div className="form-grid">
+              <label>
+                Full name
+                <input required placeholder="Your name" />
+              </label>
+
+              <label>
+                Phone
+                <input required type="tel" placeholder="10-digit number" />
+              </label>
+            </div>
+
+            <label>
+              Delivery address
+              <textarea required placeholder="House, street, city..." />
+            </label>
+
+            <label>
+              Payment method
+              <select>
+                <option>Cash on Delivery</option>
+                <option>UPI</option>
+                <option>Card</option>
+              </select>
+            </label>
+
+            <div className="checkout-total">
+              <span>Payable amount</span>
+              <strong>₹{total}</strong>
+            </div>
+
+            <button className="checkout-button" type="submit">
+              Place Order <CheckCircle2 size={18} />
+            </button>
+          </form>
+        </div>
+      )}
+
+      {/* SUCCESS */}
+      {success && (
+        <div className="success-toast">
+          <CheckCircle2 size={24} />
+          <div>
+            <strong>Order placed! 🎉</strong>
+            <span>Your delicious food is on the way.</span>
+          </div>
+          <button onClick={() => setSuccess(false)}>
+            <X size={17} />
+          </button>
+        </div>
+      )}
     </div>
   );
 }
